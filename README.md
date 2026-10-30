@@ -42,3 +42,7 @@ exit
 uv run ruff check .
 uv run ruff format --check .
 ```
+
+## Демонстрация
+
+[![asciinema](https://asciinema.org/a/LhCkadYDUDFjQf9d.svg)](https://asciinema.org/a/LhCkadYDUDFjQf9d)
