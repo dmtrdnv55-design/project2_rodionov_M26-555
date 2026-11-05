@@ -46,3 +46,34 @@ uv run ruff format --check .
 ## Демонстрация
 
 [![asciinema](https://asciinema.org/a/LhCkadYDUDFjQf9d.svg)](https://asciinema.org/a/LhCkadYDUDFjQf9d)
+
+## CRUD-операции
+
+Пример работы с записями:
+
+```text
+create_table users name:str age:int is_active:bool
+insert into users values ("Alex", 30, true)
+select from users
+select from users where age = 30
+update users set age = 31 where name = "Alex"
+delete from users where name = "Alex"
+info users
+```
+
+- `insert` — добавление записи. ID создаётся автоматически.
+- `select` — просмотр всех записей или выборка по условию.
+- `update` — обновление записей по условию.
+- `delete` — удаление записей по условию.
+- `info` — структура таблицы и количество записей.
+
+Поддерживаются типы `int`, `str`, `bool`.
+Строковые значения указываются в кавычках, логические — `true` или `false`.
+Все поля обязательны.
+
+Структура таблиц хранится в `db_meta.json`, записи — в `data/<имя_таблицы>.json`.
+Данные сохраняются между запусками программы.
+
+### Демонстрация CRUD-операций
+
+[![asciicast](https://asciinema.org/a/ci9ljTdqaFUsaAqw.svg)](https://asciinema.org/a/ci9ljTdqaFUsaAqw)
