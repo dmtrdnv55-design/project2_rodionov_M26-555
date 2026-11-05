@@ -21,10 +21,12 @@ from primitive_db.utils import (
     save_table_data,
 )
 
+from .constants import META_FILE
 from .parser import parse_condition, parse_values
 
 
 def show_help():
+    """Выводит справку по командам базы данных."""
     print("***Процесс работы с таблицей***")
     print("Функции:")
     print("<command> list_tables - показать список всех таблиц")
@@ -55,10 +57,11 @@ def show_help():
 
 
 def run():
+    """Запускает цикл чтения и выполнения команд."""
     show_help()
     cacher = create_cacher()
     while True:
-        metadata = load_metadata("db_meta.json")
+        metadata = load_metadata(META_FILE)
         command = prompt.string("Введите команду: ")
         try:
             parts = shlex.split(command)
@@ -87,7 +90,7 @@ def run():
             count_before = len(metadata)
             create_table(metadata, table_name, columns)
             if len(metadata) > count_before:
-                save_metadata("db_meta.json", metadata)
+                save_metadata(META_FILE, metadata)
                 cacher = create_cacher()
         elif parts[0] == "drop_table":
             if len(parts) != 2:
@@ -97,7 +100,7 @@ def run():
             count_before = len(metadata)
             drop_table(metadata, table_name)
             if len(metadata) < count_before:
-                save_metadata("db_meta.json", metadata)
+                save_metadata(META_FILE, metadata)
                 cacher = create_cacher()
         elif parts[0] == "insert":
             insert_parts = command.split(maxsplit=4)

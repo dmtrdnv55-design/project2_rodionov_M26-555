@@ -1,8 +1,11 @@
 import json
 import os
 
+from .constants import DATA_DIR
+
 
 def load_metadata(filepath):
+    """Загружает структуру таблиц или возвращает пустой словарь."""
     try:
         with open(filepath, "r", encoding="utf-8") as f:
             metadata = json.load(f)
@@ -12,13 +15,16 @@ def load_metadata(filepath):
 
 
 def save_metadata(filepath, data):
+    """Сохраняет структуру таблиц в JSON-файл."""
     with open(filepath, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=4, ensure_ascii=False)
 
 
 def load_table_data(table_name):
+    """Загружает записи таблицы или возвращает пустой список."""
+    filepath = os.path.join(DATA_DIR, f"{table_name}.json")
     try:
-        with open(f"data/{table_name}.json", "r", encoding="utf-8") as f:
+        with open(filepath, "r", encoding="utf-8") as f:
             table_data = json.load(f)
     except FileNotFoundError:
         table_data = []
@@ -26,15 +32,19 @@ def load_table_data(table_name):
 
 
 def save_table_data(table_name, data):
-    os.makedirs("data", exist_ok=True)
-    with open(f"data/{table_name}.json", "w", encoding="utf-8") as f:
+    """Сохраняет записи таблицы в JSON-файл."""
+    os.makedirs(DATA_DIR, exist_ok=True)
+    filepath = os.path.join(DATA_DIR, f"{table_name}.json")
+    with open(filepath, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=4, ensure_ascii=False)
 
 
 def create_cacher():
+    """Создаёт функцию с кэшем результатов по ключу."""
     cache = {}
 
     def cache_result(key, value_func):
+        """Возвращает результат из кэша или вычисляет и сохраняет его."""
         if key in cache:
             return cache[key]
         else:

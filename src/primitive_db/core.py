@@ -1,9 +1,11 @@
+from .constants import VALID_TYPES
 from .decorators import confirm_action, handle_db_errors, log_time
 from .utils import load_table_data
 
 
 @handle_db_errors
 def create_table(metadata, table_name, columns):
+    """Проверяет столбцы и добавляет таблицу в метаданные."""
     if table_name in metadata:
         print("Таблица уже существует")
         return metadata
@@ -48,6 +50,7 @@ def create_table(metadata, table_name, columns):
 @handle_db_errors
 @confirm_action("удаление таблицы")
 def drop_table(metadata, table_name):
+    """Удаляет таблицу из метаданных."""
     if table_name in metadata:
         del metadata[table_name]
         print(f'Таблица "{table_name}" успешно удалена.')
@@ -57,6 +60,7 @@ def drop_table(metadata, table_name):
 
 
 def list_tables(metadata):
+    """Выводит имена существующих таблиц."""
     if metadata == {}:
         print("Таблиц нет")
         return
@@ -67,6 +71,7 @@ def list_tables(metadata):
 @handle_db_errors
 @log_time
 def insert(metadata, table_name, values):
+    """Проверяет значения и добавляет запись с новым ID."""
     if table_name not in metadata:
         raise ValueError(f"Таблица {table_name} не найдена")
 
@@ -74,10 +79,9 @@ def insert(metadata, table_name, values):
         raise ValueError(
             f"Количество значений не соответствует структуре таблицы {table_name}"
         )
-    types = {"int": int, "str": str, "bool": bool}
     for column, value in zip(metadata[table_name][1:], values):
         column_name, column_type = column.split(":")
-        if type(value) is not types[column_type]:
+        if type(value) is not VALID_TYPES[column_type]:
             raise ValueError(
                 f"Для столбца {column_name} требуется тип данных {column_type}"
             )
@@ -94,6 +98,7 @@ def insert(metadata, table_name, values):
 @handle_db_errors
 @log_time
 def select(table_data, where_clause=None):
+    """Возвращает все записи или записи, подходящие под условие."""
     if where_clause is None:
         return table_data
     result = []
@@ -112,6 +117,7 @@ def select(table_data, where_clause=None):
 
 @handle_db_errors
 def update(table_data, set_clause, where_clause):
+    """Обновляет поля записей, подходящих под условие."""
     selected_rows = select(table_data, where_clause)
     if selected_rows is None:
         return
@@ -124,6 +130,7 @@ def update(table_data, set_clause, where_clause):
 @handle_db_errors
 @confirm_action("удаление записей")
 def delete(table_data, where_clause):
+    """Возвращает список записей без выбранных для удаления."""
     selected_rows = select(table_data, where_clause)
     if selected_rows is None:
         return
@@ -132,13 +139,13 @@ def delete(table_data, where_clause):
 
 
 def validate_clause(metadata, table_name, clause):
-    types = {"int": int, "str": str, "bool": bool}
+    """Проверяет существование столбцов и типы значений условия."""
     column_types = dict(column.split(":") for column in metadata[table_name])
     for column_name, value in clause.items():
         if column_name not in column_types:
             raise ValueError(f"Столбец {column_name} не найден")
         column_type = column_types[column_name]
-        if type(value) is not types[column_type]:
+        if type(value) is not VALID_TYPES[column_type]:
             raise ValueError(
                 f"Для столбца {column_name} требуется тип данных {column_type}"
             )

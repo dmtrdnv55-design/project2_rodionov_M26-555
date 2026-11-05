@@ -2,6 +2,7 @@ import shlex
 
 
 def parse_value(text):
+    """Преобразует текст в строку, целое число или логическое значение."""
     text = text.strip()
     if len(text) >= 2 and text[0] == text[-1] and text[0] in ('"', "'"):
         return text[1:-1]
@@ -16,6 +17,7 @@ def parse_value(text):
 
 
 def parse_condition(text):
+    """Разбирает условие вида «столбец = значение» в словарь."""
     parts = text.split("=", 1)
     if len(parts) != 2:
         raise ValueError("Условие должно иметь вид: столбец = значение")
@@ -27,6 +29,7 @@ def parse_condition(text):
 
 
 def parse_values(text):
+    """Разбирает значения в скобках для добавления записи."""
     text = text.strip()
     if not text.startswith("(") or not text.endswith(")"):
         raise ValueError("Текст должен находиться в круглых скобках")
