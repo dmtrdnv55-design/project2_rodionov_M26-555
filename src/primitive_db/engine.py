@@ -22,7 +22,7 @@ from primitive_db.utils import (
 )
 
 from .constants import META_FILE
-from .parser import parse_condition, parse_values
+from .parser import parse_condition, parse_values, split_outside_quotes
 
 
 def show_help():
@@ -179,7 +179,11 @@ def run():
                     " where <столбец> = <значение>"
                 )
                 continue
-            clauses = update_parts[3].split(" where ", 1)
+            try:
+                clauses = split_outside_quotes(update_parts[3], " where ")
+            except ValueError as error:
+                print(error)
+                continue
             if len(clauses) != 2:
                 print(
                     "Формат: update <имя_таблицы> set <столбец1> = <новое_значение1>"

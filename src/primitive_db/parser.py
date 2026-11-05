@@ -1,6 +1,3 @@
-import shlex
-
-
 def parse_value(text):
     """Преобразует текст в строку, целое число или логическое значение."""
     text = text.strip()
@@ -29,14 +26,48 @@ def parse_condition(text):
 
 
 def parse_values(text):
-    """Разбирает значения в скобках для добавления записи."""
+    """Разбирает значения в скобках и отклоняет пустые элементы."""
     text = text.strip()
     if not text.startswith("(") or not text.endswith(")"):
         raise ValueError("Текст должен находиться в круглых скобках")
-    text = text[1:-1]
-    lexer = shlex.shlex(text, posix=False)
-    lexer.whitespace = ", \t\r\n"
-    lexer.whitespace_split = True
-    lexer.commenters = ""
 
-    return [parse_value(part) for part in lexer]
+    parts = split_outside_quotes(text[1:-1], ",")
+    if any(not part.strip() for part in parts):
+        raise ValueError("Между запятыми должны быть значения")
+
+    return [parse_value(part) for part in parts]
+
+
+def split_outside_quotes(text, separator):
+    """Разделяет текст по разделителю вне кавычек."""
+    parts = []
+    quote = None
+    escaped = False
+    start = 0
+    index = 0
+
+    while index < len(text):
+        char = text[index]
+
+        if quote is not None:
+            if escaped:
+                escaped = False
+            elif char == "\\":
+                escaped = True
+            elif char == quote:
+                quote = None
+        elif char in ('"', "'"):
+            quote = char
+        elif text.startswith(separator, index):
+            parts.append(text[start:index])
+            index += len(separator)
+            start = index
+            continue
+
+        index += 1
+
+    if quote is not None:
+        raise ValueError("Не закрыты кавычки")
+
+    parts.append(text[start:])
+    return parts

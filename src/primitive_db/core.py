@@ -1,6 +1,6 @@
 from .constants import VALID_TYPES
 from .decorators import confirm_action, handle_db_errors, log_time
-from .utils import load_table_data
+from .utils import delete_table_data, load_table_data
 
 
 @handle_db_errors
@@ -50,12 +50,13 @@ def create_table(metadata, table_name, columns):
 @handle_db_errors
 @confirm_action("удаление таблицы")
 def drop_table(metadata, table_name):
-    """Удаляет таблицу из метаданных."""
-    if table_name in metadata:
-        del metadata[table_name]
-        print(f'Таблица "{table_name}" успешно удалена.')
-    else:
-        print(f'Ошибка: Таблица "{table_name}" не существует.')
+    """Удаляет файл данных таблицы и её описание из метаданных."""
+    if table_name not in metadata:
+        raise ValueError(f'Таблица "{table_name}" не существует')
+
+    delete_table_data(table_name)
+    del metadata[table_name]
+    print(f'Таблица "{table_name}" успешно удалена.')
     return metadata
 
 
@@ -131,6 +132,8 @@ def update(table_data, set_clause, where_clause):
 @confirm_action("удаление записей")
 def delete(table_data, where_clause):
     """Возвращает список записей без выбранных для удаления."""
+    if not where_clause:
+        raise ValueError("Для удаления записей необходимо непустое условие where")
     selected_rows = select(table_data, where_clause)
     if selected_rows is None:
         return

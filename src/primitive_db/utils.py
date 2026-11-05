@@ -52,3 +52,12 @@ def create_cacher():
             return cache[key]
 
     return cache_result
+
+
+def delete_table_data(table_name):
+    """Удаляет файл записей таблицы, если он существует."""
+    filepath = os.path.join(DATA_DIR, f"{table_name}.json")
+    try:
+        os.remove(filepath)
+    except FileNotFoundError:
+        pass
