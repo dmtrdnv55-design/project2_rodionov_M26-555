@@ -1,6 +1,8 @@
+from .decorators import confirm_action, handle_db_errors, log_time
 from .utils import load_table_data
 
 
+@handle_db_errors
 def create_table(metadata, table_name, columns):
     if table_name in metadata:
         print("Таблица уже существует")
@@ -43,6 +45,8 @@ def create_table(metadata, table_name, columns):
     return metadata
 
 
+@handle_db_errors
+@confirm_action("удаление таблицы")
 def drop_table(metadata, table_name):
     if table_name in metadata:
         del metadata[table_name]
@@ -60,19 +64,23 @@ def list_tables(metadata):
         print(f"- {table_name}")
 
 
+@handle_db_errors
+@log_time
 def insert(metadata, table_name, values):
     if table_name not in metadata:
-        print(f"Таблица {table_name} не найдена")
-        return
+        raise ValueError(f"Таблица {table_name} не найдена")
+
     if len(values) != len(metadata[table_name]) - 1:
-        print(f"Количество значений не соответствует структуре таблицы {table_name}")
-        return
+        raise ValueError(
+            f"Количество значений не соответствует структуре таблицы {table_name}"
+        )
     types = {"int": int, "str": str, "bool": bool}
     for column, value in zip(metadata[table_name][1:], values):
         column_name, column_type = column.split(":")
         if type(value) is not types[column_type]:
-            print(f"Для столбца {column_name} требуется тип данных {column_type}")
-            return
+            raise ValueError(
+                f"Для столбца {column_name} требуется тип данных {column_type}"
+            )
     table_data = load_table_data(table_name)
     new_id = max((row["ID"] for row in table_data), default=0) + 1
     new_row = {"ID": new_id}
@@ -83,6 +91,8 @@ def insert(metadata, table_name, values):
     return table_data
 
 
+@handle_db_errors
+@log_time
 def select(table_data, where_clause=None):
     if where_clause is None:
         return table_data
@@ -100,16 +110,23 @@ def select(table_data, where_clause=None):
     return result
 
 
+@handle_db_errors
 def update(table_data, set_clause, where_clause):
     selected_rows = select(table_data, where_clause)
+    if selected_rows is None:
+        return
     for row in selected_rows:
         for column_name, new_value in set_clause.items():
             row[column_name] = new_value
     return table_data
 
 
+@handle_db_errors
+@confirm_action("удаление записей")
 def delete(table_data, where_clause):
     selected_rows = select(table_data, where_clause)
+    if selected_rows is None:
+        return
     result = [row for row in table_data if row not in selected_rows]
     return result
 

@@ -29,3 +29,16 @@ def save_table_data(table_name, data):
     os.makedirs("data", exist_ok=True)
     with open(f"data/{table_name}.json", "w", encoding="utf-8") as f:
         json.dump(data, f, indent=4, ensure_ascii=False)
+
+
+def create_cacher():
+    cache = {}
+
+    def cache_result(key, value_func):
+        if key in cache:
+            return cache[key]
+        else:
+            cache[key] = value_func()
+            return cache[key]
+
+    return cache_result
